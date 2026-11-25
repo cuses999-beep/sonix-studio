@@ -1,23 +1,19 @@
-// ===== BeatCraft – Music Studio =====
-const PX = 50;        // pixels per second
-const LEFT = 60;      // label width
-const TRACKS = 3;
+// ===== BeatCraft – Music Studio v2 =====
+const PX = 50;      // pixels per second
+const LEFT = 60;    // lane label width
 
 const AC = window.AudioContext || window.webkitAudioContext;
 const ctx = new AC();
 
-let clips = [];       // {id,name,buffer,track,start,offset,duration,volume}
+let tracks = 3;
+let clips = [];     // {id,name,artist,buffer,track,start,offset,duration,volume}
 let selected = new Set();
-let playhead = 0;
-let playing = false;
-let playStartPos = 0, playStartCtx = 0;
-let sources = [];
 let nextId = 1;
+let playhead = 0, playing = false, playStartPos = 0, playStartCtx = 0, sources = [];
+let lanes = [], playheadEl = null;
 
 const $ = id => document.getElementById(id);
 const timeline = $('timeline');
-const playheadEl = $('playhead');
-const lanes = [];
 
 // ---------- helpers ----------
 const fmt = t => {
@@ -32,20 +28,28 @@ function toast(msg) {
 }
 const timelineEnd = () => clips.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
 const trackEnd = t => clips.filter(c => c.track === t).reduce((m, c) => Math.max(m, c.start + c.duration), 0);
+const clipLabel = c => c.artist ? `${c.artist} – ${c.name}` : c.name;
 
-// ---------- lanes ----------
-for (let i = 0; i < TRACKS; i++) {
-  const lane = document.createElement('div');
-  lane.className = 'lane';
-  lane.innerHTML = `<span class="lane-label">T${i + 1}</span>`;
-  lane.addEventListener('pointerdown', e => {
-    if (e.target === lane || e.target.classList.contains('lane-label')) {
-      const r = lane.getBoundingClientRect();
-      setPlayhead((e.clientX - r.left - LEFT) / PX);
-    }
-  });
-  lanes.push(lane);
-  timeline.appendChild(lane);
+// ---------- lanes (unlimited tracks) ----------
+function buildLanes() {
+  timeline.innerHTML = '';
+  lanes = [];
+  for (let i = 0; i < tracks; i++) {
+    const lane = document.createElement('div');
+    lane.className = 'lane';
+    lane.innerHTML = `<span class="lane-label">T${i + 1}</span>`;
+    lane.addEventListener('pointerdown', e => {
+      if (e.target === lane || e.target.classList.contains('lane-label')) {
+        const r = timeline.getBoundingClientRect();
+        setPlayhead((e.clientX - r.left - LEFT) / PX);
+      }
+    });
+    lanes.push(lane);
+    timeline.appendChild(lane);
+  }
+  playheadEl = document.createElement('div');
+  playheadEl.id = 'playhead';
+  timeline.appendChild(playheadEl);
 }
 
 // ---------- waveform ----------
@@ -79,16 +83,21 @@ function drawWave(cv, c) {
 function render() {
   lanes.forEach(l => l.querySelectorAll('.clip').forEach(n => n.remove()));
   clips.forEach(c => {
+    if (c.track >= lanes.length) c.track = lanes.length - 1;
     const el = document.createElement('div');
-    el.className = `clip t${c.track}` + (selected.has(c.id) ? ' sel' : '');
+    el.className = 'clip' + (selected.has(c.id) ? ' sel' : '');
+    const hue = (c.track * 57) % 360;
+    el.style.background = `linear-gradient(135deg, hsl(${hue},70%,50%), hsl(${hue},70%,32%))`;
     const w = Math.max(10, Math.round(c.duration * PX));
     el.style.left = (LEFT + c.start * PX) + 'px';
     el.style.width = w + 'px';
     const cv = document.createElement('canvas');
-    cv.className = 'wave'; cv.width = w; cv.height = 68;
+    cv.className = 'wave';
+    cv.width = Math.min(w, 1500); cv.height = 68;
     drawWave(cv, c);
     const name = document.createElement('span');
-    name.className = 'name'; name.textContent = c.name;
+    name.className = 'name';
+    name.textContent = clipLabel(c);
     el.append(cv, name);
     bindClip(el, c);
     lanes[c.track].appendChild(el);
@@ -105,22 +114,22 @@ function updateInfo() {
   if (first) $('volume').value = first.volume;
 }
 
-// ---------- drag / select ----------
-let drag = null;
+// ---------- select / drag ----------
 function toggleSelect(id) {
   selected.has(id) ? selected.delete(id) : selected.add(id);
   render();
 }
+let drag = null;
 function bindClip(el, c) {
   el.addEventListener('pointerdown', e => {
     e.stopPropagation();
     el.setPointerCapture(e.pointerId);
-    drag = { clip: c, x: e.clientX, orig: c.start, moved: false };
+    drag = { clip: c, x: e.clientX, y: e.clientY, orig: c.start, moved: false };
   });
   el.addEventListener('pointermove', e => {
     if (!drag || drag.clip !== c) return;
     const dx = e.clientX - drag.x;
-    if (Math.abs(dx) > 5) drag.moved = true;
+    if (!drag.moved && Math.hypot(dx, e.clientY - drag.y) > 6) drag.moved = true;
     if (drag.moved) {
       c.start = Math.max(0, drag.orig + dx / PX);
       el.style.left = (LEFT + c.start * PX) + 'px';
@@ -128,18 +137,15 @@ function bindClip(el, c) {
   });
   const end = e => {
     if (!drag || drag.clip !== c) return;
-    if (!drag.moved) {
-      toggleSelect(c.id);
-    } else {
-      c.start = Math.round(c.start * 100) / 100;
-      const idx = lanes.findIndex(l => {
-        const r = l.getBoundingClientRect();
-        return e.clientY >= r.top && e.clientY < r.bottom;
-      });
-      if (idx >= 0) c.track = idx;
-      render();
-    }
-    drag = null;
+    const d = drag; drag = null;
+    if (!d.moved) { toggleSelect(c.id); return; }
+    c.start = Math.round(c.start * 100) / 100;
+    const idx = lanes.findIndex(l => {
+      const r = l.getBoundingClientRect();
+      return e.clientY >= r.top && e.clientY < r.bottom;
+    });
+    if (idx >= 0) c.track = idx;
+    render();
   };
   el.addEventListener('pointerup', end);
   el.addEventListener('pointercancel', end);
@@ -204,7 +210,6 @@ function stop(toStart = false) {
   if (toStart) playhead = 0;
   updatePlayhead();
 }
-
 $('btnPlay').onclick = () => (playing ? stop(false) : play());
 $('btnStop').onclick = () => stop(true);
 
@@ -215,13 +220,13 @@ $('fileInput').addEventListener('change', async e => {
     try {
       const buffer = await ctx.decodeAudioData(await f.arrayBuffer());
       let track = 0, best = Infinity;
-      for (let t = 0; t < TRACKS; t++) {
+      for (let t = 0; t < lanes.length; t++) {
         const en = trackEnd(t);
         if (en < best) { best = en; track = t; }
       }
       clips.push({
-        id: nextId++, name: f.name.replace(/\.[^.]+$/, ''), buffer,
-        track, start: best, offset: 0, duration: buffer.duration, volume: 1
+        id: nextId++, name: f.name.replace(/\.[^.]+$/, ''), artist: '',
+        buffer, track, start: best, offset: 0, duration: buffer.duration, volume: 1
       });
     } catch (err) {
       toast(`${f.name} load nahi hua`);
@@ -231,6 +236,28 @@ $('fileInput').addEventListener('change', async e => {
   render();
   toast('Import ho gaya ✔');
 });
+
+// ---------- tracks ----------
+$('btnTrack').onclick = () => {
+  tracks++;
+  buildLanes();
+  render();
+  toast(`Track ${tracks} add ho gaya`);
+};
+
+// ---------- edit name / artist ----------
+$('btnEdit').onclick = () => {
+  const c = clips.find(x => selected.has(x.id));
+  if (!c) return toast('Pehle ek clip select karein');
+  const title = prompt('Track ka naam:', c.name);
+  if (title === null) return;
+  const artist = prompt('Artist ka naam:', c.artist || '');
+  if (artist === null) return;
+  c.name = title.trim() || c.name;
+  c.artist = artist.trim();
+  render();
+  toast('Save ho gaya ✔');
+};
 
 // ---------- split / delete ----------
 $('btnSplit').onclick = () => {
@@ -252,7 +279,7 @@ $('btnDelete').onclick = () => {
   selected.clear(); render();
 };
 
-// ---------- offline mixing engine ----------
+// ---------- offline mixing ----------
 async function bounce(items, dur) {
   const off = new OfflineAudioContext(2, Math.max(1, Math.ceil(dur * ctx.sampleRate)), ctx.sampleRate);
   for (const it of items) {
@@ -262,13 +289,13 @@ async function bounce(items, dur) {
   }
   return off.startRendering();
 }
-function replaceWithNew(buffer, start, track, label) {
+function replaceWithNew(buffer, start, track, name, artist) {
   clips = clips.filter(c => !selected.has(c.id));
-  clips.push({ id: nextId++, name: label, buffer, track, start, offset: 0, duration: buffer.duration, volume: 1 });
-  selected.clear(); render(); toast(`${label} ho gaya ✔`);
+  clips.push({ id: nextId++, name, artist, buffer, track, start, offset: 0, duration: buffer.duration, volume: 1 });
+  selected.clear(); render(); toast(`${name} ho gaya ✔`);
 }
 
-// ---------- overlay (sab ek saath mix) ----------
+// Overlay: sab selected clips ek saath mix
 $('btnOverlay').onclick = async () => {
   const sel = clips.filter(c => selected.has(c.id));
   if (sel.length < 2) return toast('Overlay ke liye 2+ clips select karein');
@@ -278,10 +305,10 @@ $('btnOverlay').onclick = async () => {
   const buf = await bounce(sel.map(c => ({
     buffer: c.buffer, offset: c.offset, duration: c.duration, volume: c.volume, at: c.start - base
   })), dur);
-  replaceWithNew(buf, base, Math.min(...sel.map(c => c.track)), 'Overlay');
+  replaceWithNew(buf, base, Math.min(...sel.map(c => c.track)), 'Overlay', sel[0].artist);
 };
 
-// ---------- merge (ek ke baad ek jodo) ----------
+// Merge: ek ke baad ek jodo
 $('btnMerge').onclick = async () => {
   const sel = clips.filter(c => selected.has(c.id)).sort((a, b) => a.start - b.start);
   if (sel.length < 2) return toast('Merge ke liye 2+ clips select karein');
@@ -293,10 +320,10 @@ $('btnMerge').onclick = async () => {
   });
   toast('Merging...');
   const buf = await bounce(items, pos);
-  replaceWithNew(buf, sel[0].start, sel[0].track, 'Merged');
+  replaceWithNew(buf, sel[0].start, sel[0].track, 'Merged', sel[0].artist);
 };
 
-// ---------- export WAV ----------
+// ---------- encoders ----------
 function encodeWAV(buf) {
   const ch = buf.numberOfChannels, sr = buf.sampleRate, len = buf.length;
   const bytes = 44 + len * ch * 2;
@@ -319,20 +346,82 @@ function encodeWAV(buf) {
   }
   return new Blob([view], { type: 'audio/wav' });
 }
-$('btnExport').onclick = async () => {
+
+// ID3v1 tag (ASCII only, 128 bytes): artist + title ke liye
+function id3v1(title, artist) {
+  const t = new Uint8Array(128);
+  const put = (s, off, len = 30) => {
+    for (let i = 0; i < len && i < s.length; i++) {
+      const c = s.charCodeAt(i); t[off + i] = c < 128 ? c : 63;
+    }
+  };
+  put('TAG', 0, 3);
+  put(title || '', 3);
+  put(artist || '', 33);
+  put('BeatCraft', 63);
+  t[127] = 255;
+  return t;
+}
+
+function encodeMP3(buf, title, artist) {
+  const ch = Math.min(2, buf.numberOfChannels);
+  const enc = new lamejs.Mp3Encoder(ch, buf.sampleRate, 128);
+  const toI16 = f => {
+    const o = new Int16Array(f.length);
+    for (let i = 0; i < f.length; i++) {
+      const s = Math.max(-1, Math.min(1, f[i]));
+      o[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    return o;
+  };
+  const L = toI16(buf.getChannelData(0));
+  const R = ch > 1 ? toI16(buf.getChannelData(1)) : null;
+  const parts = [], B = 1152;
+  for (let i = 0; i < L.length; i += B) {
+    const d = R ? enc.encodeBuffer(L.subarray(i, i + B), R.subarray(i, i + B))
+                : enc.encodeBuffer(L.subarray(i, i + B));
+    if (d.length) parts.push(new Uint8Array(d));
+  }
+  const end = enc.flush();
+  if (end.length) parts.push(new Uint8Array(end));
+  parts.push(id3v1(title, artist));
+  return new Blob(parts, { type: 'audio/mpeg' });
+}
+
+// ---------- export ----------
+async function exportMix(format) {
   if (!clips.length) return toast('Export ke liye kuch nahi hai');
-  toast('Export ho raha hai...');
+  if (format === 'mp3' && typeof lamejs === 'undefined')
+    return toast('MP3 library load nahi hui, internet check karein');
+
+  const sel = clips.find(c => selected.has(c.id)) || clips[0];
+  const title = prompt('Final file ka naam:', sel.name);
+  if (title === null) return;
+  const artist = prompt('Artist ka naam:', sel.artist || '');
+  if (artist === null) return;
+
+  toast('Export ho raha hai... ⏳');
   const items = clips.map(c => ({
     buffer: c.buffer, offset: c.offset, duration: c.duration, volume: c.volume, at: c.start
   }));
   const buf = await bounce(items, timelineEnd());
-  const url = URL.createObjectURL(encodeWAV(buf));
+  const blob = format === 'mp3'
+    ? encodeMP3(buf, title.trim(), artist.trim())
+    : encodeWAV(buf);
+
+  const base = (artist.trim() ? `${artist.trim()} - ${title.trim()}` : title.trim())
+    .replace(/[\\/:*?"<>|]/g, '_') || 'beatcraft';
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `beatcraft-${Date.now()}.wav`;
+  a.href = url; a.download = `${base}.${format}`;
   document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
-};
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
+  toast('Export ho gaya ✔');
+}
+$('btnMP3').onclick = () => exportMix('mp3');
+$('btnWAV').onclick = () => exportMix('wav');
 
 // ---------- start ----------
+buildLanes();
 render();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
