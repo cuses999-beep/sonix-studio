@@ -21,15 +21,18 @@
   </header>
 
   <div class="toolbar">
+    <button id="btnTrack">+ Track</button>
     <button id="btnSplit">✂ Split</button>
     <button id="btnMerge">⇢ Merge</button>
     <button id="btnOverlay">≋ Overlay</button>
+    <button id="btnEdit">✏ Naam/Artist</button>
     <button id="btnDelete">🗑 Delete</button>
-    <button id="btnExport" class="primary">⬇ Export WAV</button>
+    <button id="btnMP3" class="primary">⬇ MP3</button>
+    <button id="btnWAV">⬇ WAV</button>
   </div>
 
   <div class="timeline-wrap">
-    <div id="timeline"><div id="playhead"></div></div>
+    <div id="timeline"></div>
   </div>
 
   <div class="inspector">
@@ -38,6 +41,9 @@
   </div>
 
   <div id="toast"></div>
+
+  <!-- MP3 encoder -->
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
