@@ -1,808 +1,391 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#10111a">
-<title>SONIX Studio</title>
+<meta name="theme-color" content="#0b0c14">
+<title>SONIX Studio V2</title>
 <style>
-:root {
---bg:#0c0d14;
---panel:#151724;
---panel2:#1c2030;
---line:#2b3045;
---text:#f4f5fb;
---muted:#9ba2b8;
---accent:#a78bfa;
---purple:#7c5ce7;
---green:#63d6a2;
-}
+:root{--bg:#0b0c14;--p:#151725;--p2:#1d2031;--line:#30354b;--txt:#f4f5fb;--muted:#9da4ba;--a:#a78bfa;--green:#62d6a1;--red:#ff7185}
 *{box-sizing:border-box}
-body{
-margin:0;background:var(--bg);color:var(--text);
-font:14px system-ui,-apple-system,Segoe UI,sans-serif
-}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px system-ui}
 button,input,select{font:inherit}
-button{
-border:1px solid var(--line);background:var(--panel2);
-color:var(--text);border-radius:9px;padding:10px 13px;
-cursor:pointer
-}
+button{background:var(--p2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 12px}
 button:disabled{opacity:.4}
-.primary{background:var(--purple);border-color:var(--purple)}
-.danger{color:#ff7185}
-header{
-height:60px;padding:0 15px;display:flex;
-align-items:center;justify-content:space-between;
-background:#11131d;border-bottom:1px solid var(--line);
-position:sticky;top:0;z-index:5
-}
-.brand{font-weight:850;letter-spacing:1.5px;font-size:18px}
-.brand span{color:var(--accent)}
-main{max-width:1100px;margin:auto;padding:14px;display:grid;gap:13px}
-.panel{
-background:var(--panel);border:1px solid var(--line);
-border-radius:14px;padding:14px
-}
-.topline{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.sub,.hint{color:var(--muted);font-size:12px}
-.project{font-size:16px;font-weight:700}
-.importbox{
-border:1px dashed #5b527c;border-radius:12px;
-padding:20px 10px;text-align:center;background:#171525;margin-top:15px
-}
-.importbox strong{display:block;font-size:16px;margin:5px}
-.transport{display:flex;align-items:center;justify-content:center;gap:12px;margin:15px}
-.round{width:46px;height:46px;border-radius:50%;font-size:19px;background:var(--purple)}
-.time-row{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
-#wave{
-width:100%;height:145px;display:block;
-background:#101320;border:1px solid #292d42;
-border-radius:9px;touch-action:pan-y
-}
-.tools{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.primary{background:#7858e8;border-color:#7858e8}
+.danger{color:var(--red)}
+header{position:sticky;top:0;background:#11131d;border-bottom:1px solid var(--line);padding:12px;display:flex;justify-content:space-between;z-index:3}
+.brand{font-weight:900;letter-spacing:1px;font-size:18px}
+.brand span{color:var(--a)}
+main{max-width:1050px;margin:auto;padding:12px;display:grid;gap:12px}
+.panel{background:var(--p);border:1px solid var(--line);border-radius:13px;padding:13px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.muted,.hint{color:var(--muted);font-size:12px}
+.import{margin-top:12px;padding:18px;text-align:center;border:1px dashed #62558a;border-radius:10px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.transport{display:flex;justify-content:center;gap:10px;margin:12px}
+.round{border-radius:50%;width:46px;height:46px;background:#7858e8;font-size:18px}
+.time{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
+canvas{display:block;width:100%;height:90px;background:#101320;border:1px solid #292d42;border-radius:8px;touch-action:pan-y}
+.track{background:#111421;border:1px solid var(--line);border-radius:10px;padding:9px;margin-top:9px}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.tool{display:flex;flex-direction:column;gap:7px}
-.tool label{color:var(--muted);font-size:12px}
-.tool input[type=range]{width:100%;accent-color:var(--accent)}
-.tool input[type=number],.tool select{
-width:100%;background:#101320;border:1px solid var(--line);
-border-radius:8px;color:white;padding:9px
-}
-.section-title{font-weight:750;margin:0 0 12px}
 .settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.status{min-height:20px;color:var(--green);font-size:12px;margin-top:8px}
-footer{text-align:center;color:var(--muted);font-size:11px;padding:10px}
-@media(max-width:650px){
-main{padding:9px}
-.panel{padding:11px}
-.grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.settings{grid-template-columns:1fr 1fr}
-header{padding:0 10px}
-}
+.tool{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tool label{font-size:12px;color:var(--muted)}
+.tool input[type=range]{width:100%;accent-color:var(--a)}
+.tool input[type=number],select{background:#101320;color:white;border:1px solid var(--line);border-radius:8px;padding:8px;width:100%}
+.status{color:var(--green);font-size:12px;min-height:18px}
+h3{font-size:15px;margin:0 0 10px}
+footer{text-align:center;color:var(--muted);font-size:11px}
+@media(max-width:620px){main{padding:8px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.settings{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
-
 <header>
-<div class="brand">SONIX <span>STUDIO</span></div>
-<div>
-<button id="newBtn">New</button>
-<button class="primary" id="exportTop" disabled>Export MP3</button>
-</div>
+<div class="brand">SONIX <span>STUDIO V2</span></div>
+<div><button id="new">New</button> <button class="primary" id="quick" disabled>Export Mix</button></div>
 </header>
 
 <main>
-
 <section class="panel">
-<div class="topline">
-<div>
-<div class="project" id="fileName">Untitled Project</div>
-<div class="sub" id="fileInfo">Import audio to start editing</div>
+<div class="row">
+<div><b id="project">Untitled Project</b><div class="muted" id="info">Import audio to start editing</div></div>
+<span class="muted">MULTITRACK AUDIO EDITOR</span>
 </div>
-<span class="sub">LOCAL AUDIO EDITOR</span>
+<div class="import">
+<div style="font-size:26px">♫</div>
+<b>Import Audio Tracks</b>
+<p class="hint">Select one or multiple MP3 / WAV / M4A / OGG files</p>
+<button class="primary" id="add">＋ Add Audio</button>
+<input id="files" type="file" accept="audio/*" multiple hidden>
 </div>
-
-<div class="importbox">
-<div style="font-size:28px">♫</div>
-<strong>Import Audio</strong>
-<p class="hint">MP3 · WAV · M4A · OGG</p>
-<button class="primary" id="chooseBtn">Choose Audio File</button>
-<input id="fileInput" type="file" accept="audio/*" hidden>
-</div>
+<div id="tracks"></div>
 </section>
 
 <section class="panel">
-<div class="topline">
-<h3 class="section-title">Audio Timeline</h3>
-<span id="durationLabel" class="sub">00:00.00</span>
-</div>
-
+<div class="row"><h3>Timeline & Playback</h3><span class="muted" id="duration">00:00.00</span></div>
 <div class="transport">
-<button id="toStart" disabled>↤</button>
-<button class="round" id="playBtn" disabled>▶</button>
-<button id="stopBtn" disabled>■</button>
-<button id="toEnd" disabled>↦</button>
+<button id="start" disabled>↤</button>
+<button class="round" id="play" disabled>▶</button>
+<button id="stop" disabled>■</button>
+<button id="end" disabled>↦</button>
 </div>
-
-<div class="time-row">
-<span id="currentTime">00:00.00</span>
-<span>PLAYHEAD</span>
-<span id="totalTime">00:00.00</span>
+<div class="time"><span id="now">00:00.00</span><span>PLAYHEAD</span><span id="total">00:00.00</span></div>
+<div class="actions">
+<button id="zin" disabled>＋ Zoom</button>
+<button id="zout" disabled>− Zoom</button>
+<button id="markin" disabled>Set In</button>
+<button id="markout" disabled>Set Out</button>
+<button id="clear" disabled>Clear Selection</button>
 </div>
-
-<canvas id="wave" width="1100" height="300"></canvas>
-
-<div class="tools">
-<button id="zoomOut" disabled>− Zoom</button>
-<button id="zoomIn" disabled>+ Zoom</button>
-<button id="setIn" disabled>Set In</button>
-<button id="setOut" disabled>Set Out</button>
-<button id="resetRange" disabled>Reset Selection</button>
-</div>
-<p class="hint">Tap waveform to move the playhead. Set In and Set Out to select audio.</p>
+<p class="hint">Waveform par tap karke playhead move karein. Track select karke edit karein.</p>
 </section>
 
 <section class="panel">
-<h3 class="section-title">Edit Selection</h3>
-<div class="settings">
-<div class="tool">
-<label>Start (seconds)</label>
-<input id="inPoint" type="number" min="0" step=".01" value="0" disabled>
+<h3>Edit Selected Track</h3>
+<div class="muted" id="selected">No track selected</div>
+<div class="settings" style="margin-top:10px">
+<div class="tool"><label>Start (seconds)</label><input id="in" type="number" min="0" step=".01" value="0" disabled></div>
+<div class="tool"><label>End (seconds)</label><input id="out" type="number" min="0" step=".01" value="0" disabled></div>
+<div class="tool"><label>Selection length</label><input id="length" value="0s" disabled></div>
 </div>
-<div class="tool">
-<label>End (seconds)</label>
-<input id="outPoint" type="number" min="0" step=".01" value="0" disabled>
+<div class="actions">
+<button class="primary" id="trim" disabled>Trim Selection</button>
+<button id="split" disabled>Split at Playhead</button>
+<button class="danger" id="delete" disabled>Delete Selection</button>
+<button id="undo" disabled>Undo</button>
 </div>
-<div class="tool">
-<label>Selected Length</label>
-<input id="selectedLength" value="0.00 s" disabled>
-</div>
-</div>
-<div class="tools">
-<button class="primary" id="trimBtn" disabled>Trim Selection</button>
-<button class="danger" id="deleteBtn" disabled>Delete Selection</button>
-</div>
-<div class="status" id="editStatus"></div>
+<div class="status" id="editstatus"></div>
 </section>
 
 <section class="panel">
-<h3 class="section-title">Sound Controls</h3>
+<h3>Sound Controls & Effects</h3>
 <div class="grid">
-<div class="tool">
-<label>Volume <b id="volValue">100%</b></label>
-<input id="volume" type="range" min="0" max="200" value="100" disabled>
+<div class="tool"><label>Volume <b id="volv">100%</b></label><input id="vol" type="range" min="0" max="200" value="100" disabled></div>
+<div class="tool"><label>Speed <b id="speedv">1.00×</b></label><input id="speed" type="range" min=".5" max="2" step=".05" value="1" disabled></div>
+<div class="tool"><label>Fade In <b id="fiv">0s</b></label><input id="fi" type="range" min="0" max="10" step=".1" value="0" disabled></div>
+<div class="tool"><label>Fade Out <b id="fov">0s</b></label><input id="fo" type="range" min="0" max="10" step=".1" value="0" disabled></div>
+<div class="tool"><label>Bass <b id="bassv">0 dB</b></label><input id="bass" type="range" min="-18" max="18" value="0" disabled></div>
+<div class="tool"><label>Mid <b id="midv">0 dB</b></label><input id="mid" type="range" min="-18" max="18" value="0" disabled></div>
+<div class="tool"><label>Treble <b id="treblev">0 dB</b></label><input id="treble" type="range" min="-18" max="18" value="0" disabled></div>
+<div class="tool"><label>Echo <b id="echov">0%</b></label><input id="echo" type="range" min="0" max="60" value="0" disabled></div>
+<div class="tool"><label>Reverb <b id="reverbv">0%</b></label><input id="reverb" type="range" min="0" max="60" value="0" disabled></div>
+<div class="tool"><label>Noise Gate <b id="gatev">Off</b></label><input id="gate" type="range" min="0" max="30" value="0" disabled></div>
 </div>
-<div class="tool">
-<label>Speed <b id="speedValue">1.00×</b></label>
-<input id="speed" type="range" min=".5" max="2" step=".05" value="1" disabled>
+<div class="actions">
+<button class="primary" id="apply" disabled>Apply Effects to Track</button>
+<button id="resetfx" disabled>Reset Controls</button>
 </div>
-<div class="tool">
-<label>Fade In <b id="fadeInValue">0.0s</b></label>
-<input id="fadeIn" type="range" min="0" max="10" step=".1" value="0" disabled>
-</div>
-<div class="tool">
-<label>Fade Out <b id="fadeOutValue">0.0s</b></label>
-<input id="fadeOut" type="range" min="0" max="10" step=".1" value="0" disabled>
-</div>
-</div>
-<div class="tools">
-<button id="applyEffects" disabled>Apply Effects</button>
-<button id="undoBtn" disabled>Undo</button>
-<button id="redoBtn" disabled>Redo</button>
-</div>
-<p class="hint">Apply Effects permanently renders the selected sound settings into your audio.</p>
-<div class="status" id="soundStatus"></div>
+<p class="hint">Noise Gate quiet background noise ko reduce karta hai; ye studio-grade noise removal nahi hai.</p>
+<div class="status" id="fxstatus"></div>
 </section>
 
 <section class="panel">
-<h3 class="section-title">Export Settings</h3>
+<h3>Export Full Mix</h3>
 <div class="settings">
-<div class="tool">
-<label>MP3 Bitrate</label>
-<select id="bitrate">
-<option value="128">128 kbps</option>
-<option value="192" selected>192 kbps</option>
-<option value="256">256 kbps</option>
-<option value="320">320 kbps</option>
-</select>
+<div class="tool"><label>Format</label><select id="format"><option value="mp3">MP3</option><option value="wav">WAV</option></select></div>
+<div class="tool"><label>MP3 Bitrate</label><select id="bitrate"><option>128</option><option selected>192</option><option>256</option><option>320</option></select></div>
+<div class="tool"><label>Sample Rate</label><select id="samplerate"><option value="44100">44.1 kHz</option><option value="48000">48 kHz</option></select></div>
 </div>
-<div class="tool">
-<label>Sample Rate</label>
-<select id="sampleRate">
-<option value="44100" selected>44.1 kHz</option>
-<option value="48000">48 kHz</option>
-</select>
-</div>
-<div class="tool">
-<label>Channels</label>
-<select id="mono">
-<option value="stereo" selected>Stereo</option>
-<option value="mono">Mono</option>
-</select>
-</div>
-</div>
-<div class="tools">
-<button class="primary" id="exportBtn" disabled>Export MP3</button>
-<button id="downloadWav" disabled>Export WAV</button>
-</div>
-<div class="status" id="exportStatus"></div>
-<p class="hint">MP3 encoding requires an internet connection to load the encoder. WAV export works locally.</p>
+<div class="actions"><button class="primary" id="export" disabled>Export Full Mix</button></div>
+<div class="status" id="exportstatus"></div>
+<p class="hint">WAV export local hai. MP3 ke liye internet se encoder load hoga. Saare unmuted tracks mix honge.</p>
 </section>
-
-<footer>SONIX STUDIO · AUDIO EDITOR · V1</footer>
+<footer>SONIX STUDIO V2 · Runs in your browser</footer>
 </main>
 
 <script>
 (()=>{
 const $=id=>document.getElementById(id);
-const canvas=$('wave'),ctx=canvas.getContext('2d');
+let ac=null,T=[],sel=-1,pos=0,playing=false,started=0,zoom=1,A=0,B=0,undo=[];
+const audio=()=>ac||(ac=new(window.AudioContext||window.webkitAudioContext)());
+const cl=(x,a,b)=>Math.max(a,Math.min(b,x));
+const tr=()=>T[sel],D=()=>T.reduce((m,t)=>Math.max(m,t.b.duration),0);
+const time=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+(s%60).toFixed(2).padStart(5,'0');
+const say=(id,s)=>$(id).textContent=s;
 
-let buffer=null,source=null,audioCtx=null;
-let playing=false,startedAt=0,offset=0,zoom=1;
-let rangeIn=0,rangeOut=0,history=[],future=[];
-let fileBase='sonix-audio';
-
-const controls=[
-'playBtn','stopBtn','toStart','toEnd','zoomIn','zoomOut',
-'setIn','setOut','resetRange','inPoint','outPoint',
-'trimBtn','deleteBtn','volume','speed','fadeIn','fadeOut',
-'applyEffects','undoBtn','redoBtn','exportBtn','exportTop','downloadWav'
-];
-
-function enable(v){controls.forEach(id=>$(id).disabled=!v)}
-function duration(){return buffer?buffer.duration:0}
-function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
-function fmt(s){
-s=Math.max(0,s||0);
-let m=Math.floor(s/60);
-let sec=(s%60).toFixed(2).padStart(5,'0');
-return String(m).padStart(2,'0')+':'+sec;
+function now(){return playing?Math.min(D(),pos+(performance.now()-started)/1000):pos}
+function enable(){
+let yes=T.length>0;
+['play','stop','start','end','zin','zout','markin','markout','clear','export','quick'].forEach(id=>$(id).disabled=!yes);
+['in','out','trim','split','delete','undo','vol','speed','fi','fo','bass','mid','treble','echo','reverb','gate','apply','resetfx'].forEach(id=>$(id).disabled=!tr());
 }
-function current(){
-if(!playing)return offset;
-return Math.min(duration(),offset+(performance.now()-startedAt)/1000);
-}
-function status(id,msg){$(id).textContent=msg}
-
-function snapshot(){
-if(!buffer)return;
-history.push(buffer);
-if(history.length>12)history.shift();
-future=[];
-updateUndo();
-}
-function updateUndo(){
-$('undoBtn').disabled=!history.length;
-$('redoBtn').disabled=!future.length;
-}
-
-function updateRangeUI(){
-$('inPoint').value=rangeIn.toFixed(2);
-$('outPoint').value=rangeOut.toFixed(2);
-$('selectedLength').value=Math.max(0,rangeOut-rangeIn).toFixed(2)+' s';
-draw();
-}
-
-function draw(){
-const w=canvas.width,h=canvas.height;
-ctx.clearRect(0,0,w,h);
-ctx.fillStyle='#101320';
-ctx.fillRect(0,0,w,h);
-
-if(!buffer){
-ctx.fillStyle='#7e849a';
-ctx.font='22px system-ui';
-ctx.textAlign='center';
-ctx.fillText('Import audio to see waveform',w/2,h/2);
-return;
-}
-
-const data=buffer.getChannelData(0);
-const scale=w/(duration()/zoom);
-const mid=h/2;
-
-ctx.fillStyle='rgba(167,139,250,.16)';
-ctx.fillRect(rangeIn*scale,0,(rangeOut-rangeIn)*scale,h);
-
-ctx.strokeStyle='#a78bfa';
-ctx.lineWidth=2;
-
-const step=Math.max(1,Math.floor(data.length/w*zoom));
-
+function waveform(c,b){
+let g=c.getContext('2d'),w=c.width,h=c.height,m=h/2,d=b.getChannelData(0),scale=w/(b.duration/zoom);
+g.fillStyle='#101320';g.fillRect(0,0,w,h);
+g.fillStyle='rgba(167,139,250,.16)';g.fillRect(A*scale,0,(B-A)*scale,h);
+g.strokeStyle='#a78bfa';
+let step=Math.max(1,Math.floor(d.length/w*zoom));
 for(let x=0;x<w;x++){
-let idx=Math.floor(x/scale*buffer.sampleRate);
-if(idx>=data.length)break;
-let min=1,max=-1;
-
-for(let j=idx;j<Math.min(data.length,idx+step);j+=3){
-let v=data[j];
-if(v<min)min=v;
-if(v>max)max=v;
+let i=Math.floor(x/scale*b.sampleRate);if(i>=d.length)break;
+let lo=1,hi=-1;
+for(let j=i;j<Math.min(d.length,i+step);j+=3){lo=Math.min(lo,d[j]);hi=Math.max(hi,d[j]);}
+g.beginPath();g.moveTo(x,m+lo*m*.85);g.lineTo(x,m+hi*m*.85);g.stroke();
 }
-
-ctx.beginPath();
-ctx.moveTo(x,mid+min*mid*.85);
-ctx.lineTo(x,mid+max*mid*.85);
-ctx.stroke();
+let p=now()*scale;g.strokeStyle='white';g.beginPath();g.moveTo(p,0);g.lineTo(p,h);g.stroke();
 }
-
-const px=clamp(current()*scale,0,w);
-ctx.strokeStyle='#ffffff';
-ctx.lineWidth=2;
-ctx.beginPath();
-ctx.moveTo(px,0);
-ctx.lineTo(px,h);
-ctx.stroke();
-}
-
-function refresh(){
-if(!buffer)return;
-$('durationLabel').textContent=fmt(duration());
-$('totalTime').textContent=fmt(duration());
-$('currentTime').textContent=fmt(current());
-draw();
-requestAnimationFrame(()=>{
-if(playing)refresh();
+function render(){
+let root=$('tracks');root.innerHTML='';
+T.forEach((t,i)=>{
+let box=document.createElement('div');box.className='track';
+box.style.borderColor=i===sel?'#a78bfa':'#30354b';
+let row=document.createElement('div');row.className='row';
+let name=document.createElement('b');name.textContent=t.name;
+let controls=document.createElement('div');
+let pick=document.createElement('button');pick.textContent=i===sel?'Selected':'Select';pick.onclick=()=>select(i);
+let mute=document.createElement('button');mute.textContent=t.mute?'Unmute':'Mute';mute.onclick=()=>{t.mute=!t.mute;render()};
+let rem=document.createElement('button');rem.textContent='Remove';rem.className='danger';
+rem.onclick=()=>{stop();T.splice(i,1);sel=Math.min(sel,T.length-1);render();enable();info()};
+controls.append(pick,mute,rem);row.append(name,controls);
+let c=document.createElement('canvas');c.width=1100;c.height=170;
+c.onclick=e=>{let r=c.getBoundingClientRect();pos=cl((e.clientX-r.left)/r.width*D(),0,D());stop();refresh()};
+box.append(row,c);root.append(box);waveform(c,t.b);
 });
+if(!T.length)root.innerHTML='<p class="hint">Imported tracks appear here.</p>';
+info();
 }
-
-function stop(){
-if(source){
-try{source.stop()}catch(e){}
-source=null;
+function info(){
+say('project',T.length?T.length+' Audio Track(s)':'Untitled Project');
+say('info',T.length?'Project length '+D().toFixed(2)+'s · '+T.length+' tracks':'Import audio to start editing');
+say('duration',time(D()));say('total',time(D()));refresh();
 }
-playing=false;
-offset=clamp(offset,0,duration());
-$('playBtn').textContent='▶';
-refresh();
+function refresh(){
+say('now',time(now()));
+T.forEach((t,i)=>{let c=$('tracks').children[i]?.querySelector('canvas');if(c)waveform(c,t.b)});
 }
-
-async function loadFile(file){
-if(!file)return;
+function select(i){
+sel=i;let t=tr();say('selected',t?t.name:'No track selected');
+if(t){['vol','speed','fi','fo','bass','mid','treble','echo','reverb','gate'].forEach(id=>$(id).value=t[id]);labels()}
+render();enable();
+}
+function labels(){
+let f=(id,s)=>say(id,s);
+f('volv',$('vol').value+'%');
+f('speedv',Number($('speed').value).toFixed(2)+'×');
+f('fiv',$('fi').value+'s');f('fov',$('fo').value+'s');
+['bass','mid','treble'].forEach(x=>f(x+'v',$(x).value+' dB'));
+f('echov',$('echo').value+'%');f('reverbv',$('reverb').value+'%');
+f('gatev',$('gate').value==0?'Off':$('gate').value+' dB');
+}
+function selection(){
+$('in').value=A.toFixed(2);$('out').value=B.toFixed(2);
+$('length').value=Math.max(0,B-A).toFixed(2)+' s';refresh();
+}
+async function importFiles(files){
+for(let file of files){
 try{
-stop();
-audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();
-const arr=await file.arrayBuffer();
-buffer=await audioCtx.decodeAudioData(arr);
-
-fileBase=(file.name.replace(/\.[^.]+$/,'')||'sonix-audio')
-.replace(/[^\w-]+/g,'-');
-
-rangeIn=0;
-rangeOut=duration();
-offset=0;
-history=[];
-future=[];
-enable(true);
-
-$('fileName').textContent=file.name;
-$('fileInfo').textContent=
-`${buffer.numberOfChannels} channel(s) · ${buffer.sampleRate} Hz · ${(file.size/1048576).toFixed(2)} MB`;
-
-$('volume').value=100;
-$('speed').value=1;
-$('fadeIn').value=0;
-$('fadeOut').value=0;
-
-updateLabels();
-updateRangeUI();
-refresh();
-status('editStatus','Audio loaded successfully.');
-status('soundStatus','');
-status('exportStatus','');
-}catch(e){
-status('editStatus','Could not decode this file. Try MP3 or WAV.');
+let b=await audio().decodeAudioData(await file.arrayBuffer());
+T.push({name:file.name,b,vol:100,speed:1,fi:0,fo:0,bass:0,mid:0,treble:0,echo:0,reverb:0,gate:0,mute:false});
+sel=T.length-1;
+}catch(e){say('editstatus','Could not decode '+file.name+'; try MP3 or WAV.')}
 }
+render();select(sel);enable();B=D();selection();
+say('editstatus','Audio imported. Select a track to edit.');
 }
-
-function updateLabels(){
-$('volValue').textContent=$('volume').value+'%';
-$('speedValue').textContent=Number($('speed').value).toFixed(2)+'×';
-$('fadeInValue').textContent=Number($('fadeIn').value).toFixed(1)+'s';
-$('fadeOutValue').textContent=Number($('fadeOut').value).toFixed(1)+'s';
-}
-
+function stop(){if(playing){pos=now();playing=false}$('play').textContent='▶'}
 function play(){
-if(!buffer)return;
-if(playing){stop();return}
-if(offset>=duration())offset=0;
-
-audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();
-audioCtx.resume();
-
-source=audioCtx.createBufferSource();
-source.buffer=buffer;
-source.playbackRate.value=Number($('speed').value);
-
-const gain=audioCtx.createGain();
-gain.gain.value=Number($('volume').value)/100;
-
-source.connect(gain).connect(audioCtx.destination);
-source.onended=()=>{
-if(playing){
-playing=false;
-offset=0;
-$('playBtn').textContent='▶';
-refresh();
+if(!T.length)return;
+if(playing){stop();refresh();return}
+if(pos>=D())pos=0;
+let a=audio();a.resume();
+T.forEach(t=>{
+if(t.mute||pos>=t.b.duration)return;
+let s=a.createBufferSource(),g=a.createGain();
+s.buffer=t.b;s.playbackRate.value=t.speed;g.gain.value=t.vol/100;
+s.connect(g).connect(a.destination);s.start(0,pos);
+});
+playing=true;started=performance.now();$('play').textContent='Ⅱ';
+(function tick(){
+if(!playing)return;refresh();
+if(now()>=D()){playing=false;pos=0;$('play').textContent='▶';refresh();return}
+requestAnimationFrame(tick);
+})();
 }
-};
-
-startedAt=performance.now();
-source.start(0,offset);
-playing=true;
-$('playBtn').textContent='Ⅱ';
-refresh();
+function snap(){
+if(tr()){undo.push({i:sel,b:tr().b});if(undo.length>12)undo.shift();$('undo').disabled=false}
 }
-
-function cutBuffer(a,b){
-const sr=buffer.sampleRate;
-const n=Math.max(1,Math.floor((b-a)*sr));
-const out=audioCtx.createBuffer(buffer.numberOfChannels,n,sr);
-
-for(let c=0;c<buffer.numberOfChannels;c++){
-out.copyToChannel(
-buffer.getChannelData(c).slice(
-Math.floor(a*sr),Math.floor(a*sr)+n
-),c
-);
+function slice(b,a,z){
+let sr=b.sampleRate,n=Math.max(1,Math.floor((z-a)*sr));
+let o=audio().createBuffer(b.numberOfChannels,n,sr);
+for(let c=0;c<b.numberOfChannels;c++)o.copyToChannel(b.getChannelData(c).slice(Math.floor(a*sr),Math.floor(a*sr)+n),c);
+return o;
 }
-return out;
-}
-
-function replaceBuffer(b){
-buffer=b;
-offset=0;
-rangeIn=0;
-rangeOut=duration();
-updateRangeUI();
-refresh();
-updateUndo();
-}
-
+function replace(b){tr().b=b;pos=0;A=0;B=b.duration;render();selection()}
 function trim(){
-if(!buffer||rangeOut<=rangeIn)return;
-snapshot();
-stop();
-replaceBuffer(cutBuffer(rangeIn,rangeOut));
-status('editStatus','Trimmed audio to selection.');
+if(!tr()||B<=A)return;snap();stop();replace(slice(tr().b,A,B));say('editstatus','Trim complete.');
 }
-
-function deleteRange(){
-if(!buffer||rangeOut<=rangeIn)return;
-if(rangeIn===0&&rangeOut===duration())return;
-
-snapshot();
-stop();
-
-const sr=buffer.sampleRate;
-const a=Math.floor(rangeIn*sr);
-const b=Math.floor(rangeOut*sr);
-const n=buffer.length-(b-a);
-
-if(n<1){
-status('editStatus','Cannot delete the entire audio.');
-return;
+function del(){
+if(!tr()||B<=A||A===0&&B>=tr().b.duration)return;
+snap();stop();let b=tr().b,sr=b.sampleRate,a=Math.floor(A*sr),z=Math.floor(B*sr);
+let o=audio().createBuffer(b.numberOfChannels,b.length-z+a,sr);
+for(let c=0;c<b.numberOfChannels;c++){
+let d=b.getChannelData(c);o.copyToChannel(d.slice(0,a),c,0);o.copyToChannel(d.slice(z),c,a);
 }
-
-const out=audioCtx.createBuffer(buffer.numberOfChannels,n,sr);
-
-for(let c=0;c<buffer.numberOfChannels;c++){
-const d=buffer.getChannelData(c);
-out.copyToChannel(d.slice(0,a),c,0);
-if(b<d.length)out.copyToChannel(d.slice(b),c,a);
+replace(o);say('editstatus','Selection deleted.');
 }
-
-replaceBuffer(out);
-status('editStatus','Selection deleted.');
+function split(){
+if(!tr()||pos<=.01||pos>=tr().b.duration-.01){say('editstatus','Move playhead inside selected track, then split.');return}
+snap();let b=tr().b,left=slice(b,0,pos),right=slice(b,pos,b.duration);
+let copy={...tr(),name:tr().name+' (part 2)',b:right};
+tr().b=left;T.splice(sel+1,0,copy);render();enable();say('editstatus','Track split into two tracks.');
 }
-
-async function applySound(){
-if(!buffer)return;
-
-snapshot();
-stop();
-
-const sr=buffer.sampleRate;
-const rate=Number($('speed').value);
-const vol=Number($('volume').value)/100;
-const fi=Number($('fadeIn').value);
-const fo=Number($('fadeOut').value);
-const len=buffer.duration/rate;
-
-const off=new OfflineAudioContext(
-buffer.numberOfChannels,Math.ceil(len*sr),sr
-);
-
-const src=off.createBufferSource();
-const gain=off.createGain();
-
-src.buffer=buffer;
-src.playbackRate.value=rate;
-
-gain.gain.setValueAtTime(0,0);
-gain.gain.linearRampToValueAtTime(vol,Math.min(fi,len/2));
-
-if(fo>0){
-gain.gain.setValueAtTime(vol,Math.max(fi,len-fo));
-gain.gain.linearRampToValueAtTime(0,len);
-}else{
-gain.gain.setValueAtTime(vol,Math.min(fi,len));
-}
-
-src.connect(gain).connect(off.destination);
-src.start();
-
+async function effects(){
+let t=tr();if(!t)return;stop();snap();say('fxstatus','Rendering effects…');
 try{
-const rendered=await off.startRendering();
-replaceBuffer(rendered);
-
-$('volume').value=100;
-$('speed').value=1;
-$('fadeIn').value=0;
-$('fadeOut').value=0;
-
-updateLabels();
-status('soundStatus','Effects applied successfully.');
-}catch(e){
-status('soundStatus','Could not render on this device.');
+let b=t.b,sr=b.sampleRate,rate=Number($('speed').value);
+let out=new OfflineAudioContext(b.numberOfChannels,Math.ceil(b.duration/rate*sr),sr);
+let src=out.createBufferSource(),lo=out.createBiquadFilter(),mi=out.createBiquadFilter(),hi=out.createBiquadFilter(),gain=out.createGain();
+src.buffer=b;src.playbackRate.value=rate;
+lo.type='lowshelf';lo.frequency.value=250;lo.gain.value=+$('bass').value;
+mi.type='peaking';mi.frequency.value=1000;mi.gain.value=+$('mid').value;
+hi.type='highshelf';hi.frequency.value=4000;hi.gain.value=+$('treble').value;
+let volume=+$('vol').value/100,d=b.duration/rate,fi=Math.min(+$('fi').value,d/2),fo=Math.min(+$('fo').value,d/2);
+gain.gain.setValueAtTime(0,0);gain.gain.linearRampToValueAtTime(volume,fi);
+if(fo){gain.gain.setValueAtTime(volume,Math.max(fi,d-fo));gain.gain.linearRampToValueAtTime(0,d)}
+src.connect(lo).connect(mi).connect(hi).connect(gain);gain.connect(out.destination);
+let echo=+$('echo').value/100,rev=+$('reverb').value/100;
+if(echo){let delay=out.createDelay(1),eg=out.createGain();delay.delayTime.value=.28;eg.gain.value=echo*.5;gain.connect(delay).connect(eg).connect(out.destination)}
+if(rev){let delay=out.createDelay(1),rg=out.createGain();delay.delayTime.value=.075;rg.gain.value=rev*.3;gain.connect(delay).connect(rg).connect(out.destination)}
+src.start();let rendered=await out.startRendering(),gate=+$('gate').value;
+if(gate){
+let th=Math.pow(10,-gate/20);
+for(let c=0;c<rendered.numberOfChannels;c++){
+let d=rendered.getChannelData(c);
+for(let i=0;i<d.length;i++)if(Math.abs(d[i])<th)d[i]*=.08;
 }
 }
-
-function wavBlob(b){
-const ch=b.numberOfChannels;
-const sr=b.sampleRate;
-const len=b.length;
-const bytes=44+len*ch*2;
-const ab=new ArrayBuffer(bytes);
-const v=new DataView(ab);
-
-const str=(o,s)=>{
-for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));
-};
-
-str(0,'RIFF');
-v.setUint32(4,bytes-8,true);
-str(8,'WAVE');
-str(12,'fmt ');
-v.setUint32(16,16,true);
-v.setUint16(20,1,true);
-v.setUint16(22,ch,true);
-v.setUint32(24,sr,true);
-v.setUint32(28,sr*ch*2,true);
-v.setUint16(32,ch*2,true);
-v.setUint16(34,16,true);
-str(36,'data');
-v.setUint32(40,bytes-44,true);
-
+t.b=rendered;
+['vol','speed','fi','fo','bass','mid','treble','echo','reverb','gate'].forEach((id,i)=>$(id).value=[100,1,0,0,0,0,0,0,0,0][i]);
+select(sel);B=D();render();say('fxstatus','Effects applied to selected track.');
+}catch(e){say('fxstatus','Render failed. Try a shorter audio file.')}
+}
+function wav(b){
+let ch=b.numberOfChannels,sr=b.sampleRate,n=b.length,size=44+n*ch*2,ab=new ArrayBuffer(size),v=new DataView(ab);
+let str=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};
+str(0,'RIFF');v.setUint32(4,size-8,true);str(8,'WAVE');str(12,'fmt ');
+v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,ch,true);
+v.setUint32(24,sr,true);v.setUint32(28,sr*ch*2,true);v.setUint16(32,ch*2,true);
+v.setUint16(34,16,true);str(36,'data');v.setUint32(40,size-44,true);
 let p=44;
-
-for(let i=0;i<len;i++){
-for(let c=0;c<ch;c++){
-let s=clamp(b.getChannelData(c)[i],-1,1);
-v.setInt16(p,s<0?s*32768:s*32767,true);
-p+=2;
+for(let i=0;i<n;i++)for(let c=0;c<ch;c++){
+let x=cl(b.getChannelData(c)[i],-1,1);
+v.setInt16(p,x<0?x*32768:x*32767,true);p+=2;
 }
-}
-
 return new Blob([ab],{type:'audio/wav'});
 }
-
 function save(blob,name){
-const a=document.createElement('a');
-const url=URL.createObjectURL(blob);
-a.href=url;
-a.download=name;
-document.body.appendChild(a);
-a.click();
-a.remove();
-setTimeout(()=>URL.revokeObjectURL(url),30000);
+let u=URL.createObjectURL(blob),a=document.createElement('a');
+a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),30000);
 }
-
-async function exportMP3(){
-if(!buffer)return;
-
-const btn=$('exportBtn');
-btn.disabled=true;
-$('exportTop').disabled=true;
-status('exportStatus','Preparing MP3 encoder...');
-
+async function mix(rate){
+let out=new OfflineAudioContext(2,Math.ceil(D()*rate),rate);
+T.forEach(t=>{
+if(t.mute)return;
+let s=out.createBufferSource(),g=out.createGain();
+s.buffer=t.b;s.playbackRate.value=t.speed;g.gain.value=t.vol/100;
+s.connect(g).connect(out.destination);s.start();
+});
+return out.startRendering();
+}
+async function exportMix(){
+if(!T.length)return;$('export').disabled=true;say('exportstatus','Mixing tracks…');
 try{
-if(!window.lamejs){
-await new Promise((resolve,reject)=>{
-const s=document.createElement('script');
-s.src='https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';
-s.onload=resolve;
-s.onerror=reject;
-document.head.appendChild(s);
+let rate=+$('samplerate').value,b=await mix(rate);
+if($('format').value==='wav'){
+save(wav(b),'sonix-studio-mix.wav');say('exportstatus','WAV exported successfully.');
+}else{
+say('exportstatus','Loading MP3 encoder…');
+if(!window.lamejs)await new Promise((ok,no)=>{
+let s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js';
+s.onload=ok;s.onerror=no;document.head.append(s);
 });
+let enc=new lamejs.Mp3Encoder(2,rate,+$('bitrate').value),l=b.getChannelData(0),r=b.getChannelData(1),parts=[];
+for(let i=0;i<l.length;i+=1152){
+let n=Math.min(1152,l.length-i),L=new Int16Array(n),R=new Int16Array(n);
+for(let j=0;j<n;j++){L[j]=cl(l[i+j]*32768,-32768,32767);R[j]=cl(r[i+j]*32768,-32768,32767)}
+let d=enc.encodeBuffer(L,R);if(d.length)parts.push(new Uint8Array(d));
+if(i%(1152*150)===0)say('exportstatus','Encoding '+Math.round(i/l.length*100)+'%…');
 }
-
-const rate=Number($('sampleRate').value);
-const mono=$('mono').value==='mono';
-const channels=mono?1:Math.min(2,buffer.numberOfChannels);
-const kbps=Number($('bitrate').value);
-
-let pcm=buffer;
-
-if(rate!==buffer.sampleRate||mono){
-const len=Math.ceil(buffer.duration*rate);
-const off=new OfflineAudioContext(channels,len,rate);
-const src=off.createBufferSource();
-src.buffer=buffer;
-src.connect(off.destination);
-src.start();
-pcm=await off.startRendering();
+let end=enc.flush();if(end.length)parts.push(new Uint8Array(end));
+save(new Blob(parts,{type:'audio/mpeg'}),'sonix-studio-mix.mp3');
+say('exportstatus','MP3 exported successfully.');
 }
-
-const enc=new lamejs.Mp3Encoder(channels,rate,kbps);
-const left=pcm.getChannelData(0);
-const right=channels===2?
-(pcm.numberOfChannels>1?pcm.getChannelData(1):left):null;
-
-const chunk=1152;
-const parts=[];
-
-for(let i=0;i<left.length;i+=chunk){
-const l=new Int16Array(Math.min(chunk,left.length-i));
-const r=channels===2?new Int16Array(l.length):null;
-
-for(let j=0;j<l.length;j++){
-l[j]=clamp(left[i+j]*32768,-32768,32767);
-if(r)r[j]=clamp(right[i+j]*32768,-32768,32767);
+}catch(e){say('exportstatus','Export failed. Try WAV or a shorter project.')}
+$('export').disabled=false;
 }
-
-const data=channels===2?
-enc.encodeBuffer(l,r):enc.encodeBuffer(l);
-
-if(data.length)parts.push(new Uint8Array(data));
-
-if(i%(chunk*100)===0){
-status('exportStatus',
-`Encoding... ${Math.round(i/left.length*100)}%`);
-}
-}
-
-const end=enc.flush();
-if(end.length)parts.push(new Uint8Array(end));
-
-save(
-new Blob(parts,{type:'audio/mpeg'}),
-fileBase+'-edited.mp3'
-);
-
-status('exportStatus','MP3 exported successfully.');
-
-}catch(e){
-status('exportStatus',
-'MP3 export failed. Reload and try again with internet.');
-}finally{
-btn.disabled=false;
-$('exportTop').disabled=false;
-}
-}
-
-/* BUTTON EVENTS */
-
-$('chooseBtn').onclick=()=>$('fileInput').click();
-$('fileInput').onchange=e=>loadFile(e.target.files[0]);
-
-$('playBtn').onclick=play;
-
-$('stopBtn').onclick=()=>{
-stop();
-offset=0;
-refresh();
+$('add').onclick=()=>$('files').click();
+$('files').onchange=e=>{importFiles(e.target.files);e.target.value=''};
+$('play').onclick=play;
+$('stop').onclick=()=>{stop();pos=0;refresh()};
+$('start').onclick=()=>{stop();pos=0;refresh()};
+$('end').onclick=()=>{stop();pos=D();refresh()};
+$('markin').onclick=()=>{A=cl(now(),0,B);selection()};
+$('markout').onclick=()=>{B=cl(now(),A,D());selection()};
+$('clear').onclick=()=>{A=0;B=D();selection()};
+$('in').onchange=()=>{A=cl(+$('in').value,0,B);selection()};
+$('out').onchange=()=>{B=cl(+$('out').value,A,D());selection()};
+$('trim').onclick=trim;$('delete').onclick=del;$('split').onclick=split;
+$('undo').onclick=()=>{
+let x=undo.pop();
+if(x&&T[x.i]){T[x.i].b=x.b;sel=x.i;select(sel);B=D()}
+$('undo').disabled=!undo.length;
 };
-
-$('toStart').onclick=()=>{
-stop();
-offset=0;
-refresh();
+$('zin').onclick=()=>{zoom=cl(zoom*1.25,1,8);render()};
+$('zout').onclick=()=>{zoom=cl(zoom/1.25,1,8);render()};
+$('apply').onclick=effects;
+$('resetfx').onclick=()=>{
+['vol','speed','fi','fo','bass','mid','treble','echo','reverb','gate'].forEach((id,i)=>$(id).value=[100,1,0,0,0,0,0,0,0,0][i]);
+labels();
 };
-
-$('toEnd').onclick=()=>{
-stop();
-offset=duration();
-refresh();
+['vol','speed','fi','fo','bass','mid','treble','echo','reverb','gate'].forEach(id=>$(id).oninput=()=>{if(tr())tr()[id]=+$(id).value;labels()});
+$('export').onclick=exportMix;$('quick').onclick=exportMix;
+$('new').onclick=()=>{
+stop();T=[];sel=-1;pos=A=B=0;undo=[];render();enable();
+say('selected','No track selected');
+['editstatus','fxstatus','exportstatus'].forEach(id=>say(id,''));
 };
-
-canvas.addEventListener('click',e=>{
-if(!buffer)return;
-const r=canvas.getBoundingClientRect();
-const x=(e.clientX-r.left)/r.width;
-stop();
-offset=clamp(x*duration()/zoom,0,duration());
-refresh();
-});
-
-$('setIn').onclick=()=>{
-rangeIn=clamp(current(),0,rangeOut);
-updateRangeUI();
-};
-
-$('setOut').onclick=()=>{
-rangeOut=clamp(current(),rangeIn,duration());
-updateRangeUI();
-};
-
-$('resetRange').onclick=()=>{
-rangeIn=0;
-rangeOut=duration();
-updateRangeUI();
-};
-
-$('inPoint').onchange=()=>{
-rangeIn=clamp(Number($('inPoint').value)||0,0,rangeOut);
-updateRangeUI();
-};
-
-$('outPoint').onchange=()=>{
-rangeOut=clamp(Number($('outPoint').value)||0,rangeIn,duration());
-updateRangeUI();
-};
-
-$('trimBtn').onclick=trim;
-$('deleteBtn').onclick=deleteRange;
-$('applyEffects').onclick=applySound;
-
-['volume','speed','fadeIn','fadeOut'].forEach(id=>{
-$(id).oninput=updateLabels;
-});
-
-$('undoBtn').onclick=()=>{
-if(!history.length)return;
-future.push(buffer);
-replaceBuffer(history.pop());
-};
-
-$('redoBtn').onclick=()=>{
-if(!future.length)return;
-history.push(buffer);
-replaceBuffer(future.pop());
-};
-
-$('zoomIn').onclick=()=>{
-zoom=clamp(zoom*1.25,1,8);
-draw();
-};
-
-$('zoomOut').onclick=()=>{
-zoom=clamp(zoom/1.25,1,8);
-draw();
-};
-
-$('exportBtn').onclick=exportMP3;
-$('exportTop').onclick=exportMP3;
-
-$('downloadWav').onclick=()=>{
-if(buffer)save(wavBlob(buffer),fileBase+'-edited.wav');
-};
-
-$('newBtn').onclick=()=>{
-stop();
-buffer=null;
-offset=0;
-rangeIn=0;
-rangeOut=0;
-enable(false);
-$('fileInput').value='';
-$('fileName').textContent='Untitled Project';
-$('fileInfo').textContent='Import audio to start editing';
-status('editStatus','');
-status('soundStatus','');
-status('exportStatus','');
-draw();
-$('durationLabel').textContent='00:00.00';
-$('currentTime').textContent='00:00.00';
-$('totalTime').textContent='00:00.00';
-};
-
-enable(false);
-draw();
-
+enable();info();labels();
 })();
 </script>
 </body>
 </html>
-
